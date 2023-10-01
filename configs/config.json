@@ -1,0 +1,9 @@
+{
+  "argus_api": {
+    "get_historical" : false,
+    "time_delay" : 3
+  },
+  "argus_reformat": {
+    "use_files_json": true
+  }
+}
