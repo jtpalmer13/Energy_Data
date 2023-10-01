@@ -2,6 +2,7 @@ import time
 from google.cloud import bigquery
 import logging
 import json
+import os
 from argus_api import list_files_in_directory
 
 
@@ -15,7 +16,7 @@ def load_json(filename):
         with open(filename, 'r') as f:
             return json.load(f)
     except Exception as e:
-        logging.error(f"[Argus_Reformat] Failed to load JSON from {filename}: {e}")
+        logging.error(f"[BigQuery] Failed to load JSON from {filename}: {e}")
         raise
 
 
@@ -23,9 +24,18 @@ def save_json(filename, data):
     try:
         with open(filename, 'w') as f:
             json.dump(data, f)
-        logging.info(f"Successfully saved JSON to {filename}")
+        logging.info(f"[BigQuery] Successfully saved JSON to {filename}")
     except Exception as e:
-        logging.error(f"Failed to save JSON to {filename}: {e}")
+        logging.error(f"[BigQuery] Failed to save JSON to {filename}: {e}")
+        raise
+
+
+def load_config():
+    try:
+        with open("configs/config.json", "r") as f:
+            return json.load(f).get('bigQuery')
+    except Exception as e:
+        logging.error(f"[BigQuery] Failed to load config: {e}")
         raise
 
 
@@ -50,7 +60,38 @@ def run_job(client, table_id, job_config, file_id):
         return False
 
 
+def delete_file_by_id(file_id, directory_path):
+    try:
+        file_path = os.path.join(directory_path, file_id)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+            logging.info(f"[BigQuery] Successfully deleted file: {file_id}")
+        else:
+            logging.warning(f"[BigQuery] File {file_id} not found in directory: {directory_path}")
+
+    except FileNotFoundError:
+        logging.error(f"[BigQuery] File {file_id} not found.")
+    except PermissionError:
+        logging.error(f"[BigQuery] Permission denied to delete file {file_id}.")
+    except Exception as e:
+        logging.error(f"[BigQuery] An error occurred while deleting file {file_id}: {e}")
+
+
+def cleanup(successful_files):
+    for file_id in successful_files:
+        try:
+            delete_file_by_id(f"{file_id}.xlsx", 'argus_downloads')
+        except:
+            pass
+        try:
+            delete_file_by_id(f"{file_id}.csv", 'argus_reformated')
+        except:
+            pass
+
 def argus():
+    config = load_config()
+    DELETE_FILES = config.get('delete_files')
+
     # Construct a BigQuery client object
     client = bigquery.Client.from_service_account_json('configs/gcloud_api_credentials.json')
 
@@ -81,6 +122,8 @@ def argus():
 
     save_json('configs/files.json', existing_files)
 
+    if DELETE_FILES:
+        cleanup(successful_files)
 
 if __name__ == "__main__":
     argus()
