@@ -54,7 +54,7 @@ def initialize_webdriver():
         "download.directory_upgrade": True,
         "safebrowsing.enabled": True
     })
-    return webdriver.Chrome(options=chrome_options)
+    return webdriver.ChromiumEdge(options=chrome_options)
 
 
 # Function to login to Argus Media
@@ -146,7 +146,7 @@ def main():
 
     # Load configurations and credentials
     config = load_json_file("configs/config.json").get('argus_api', {})
-    credentials = load_json_file("configs/creds.json")
+    credentials = load_json_file("configs/creds.json").get('argus')
     argus_files = load_json_file("configs/files.json")
 
     if not all([config, credentials, argus_files]):
@@ -175,7 +175,7 @@ def main():
         file_ids = set(fetch_hisorical_file_ids(session))
     else:
         file_ids = set(fetch_file_ids(session))
-    print(file_ids)
+
     # Identify existing file IDs
     current_fileIDs = set(list_files_in_directory('argus_downloads')).union(
         set(list_files_in_directory('argus_reformated'))).union(
