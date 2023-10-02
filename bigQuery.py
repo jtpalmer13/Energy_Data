@@ -5,7 +5,6 @@ import json
 import os
 from argus_api import list_files_in_directory
 
-
 # Initialize logging
 logging.basicConfig(filename='server.log', level=logging.INFO,
                     format='%(asctime)s:%(levelname)s:%(message)s')
@@ -75,8 +74,8 @@ def delete_file_by_id(file_id, directory_path):
 
 def cleanup(successful_files):
     for file_id in successful_files:
-            delete_file_by_id(f"{file_id}.xlsx", 'argus_downloads')
-            delete_file_by_id(f"{file_id}.csv", 'argus_reformated')
+        delete_file_by_id(f"{file_id}.xlsx", 'argus_downloads')
+        delete_file_by_id(f"{file_id}.csv", 'argus_reformated')
 
 
 def argus():
