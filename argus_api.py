@@ -9,6 +9,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
 
 # Initialize logging
 logging.basicConfig(filename='server.log', level=logging.INFO,
@@ -60,6 +61,18 @@ def initialize_webdriver():
 def login_to_argus(driver, credentials):
     try:
         driver.get("https://myaccount.argusmedia.com/login?ReturnUrl=https://direct.argusmedia.com")
+        try:
+            element = driver.find_element(by="CSS", value='#px-captcha')
+            action = ActionChains(driver)
+            action.click_and_hold(element)
+            action.perform()
+            time.sleep(10)
+            action.release(element)
+            action.perform()
+            time.sleep(0.2)
+            action.release(element)
+        except:
+            pass
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "username"))).send_keys(
             credentials['username'])
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "password"))).send_keys(
@@ -162,7 +175,7 @@ def main():
         file_ids = set(fetch_hisorical_file_ids(session))
     else:
         file_ids = set(fetch_file_ids(session))
-
+    print(file_ids)
     # Identify existing file IDs
     current_fileIDs = set(list_files_in_directory('argus_downloads')).union(
         set(list_files_in_directory('argus_reformated'))).union(

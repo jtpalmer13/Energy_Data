@@ -65,9 +65,6 @@ def delete_file_by_id(file_id, directory_path):
         if os.path.isfile(file_path):
             os.remove(file_path)
             logging.info(f"[BigQuery] Successfully deleted file: {file_id}")
-        else:
-            logging.warning(f"[BigQuery] File {file_id} not found in directory: {directory_path}")
-
     except:
         pass
 
