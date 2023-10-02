@@ -69,24 +69,15 @@ def delete_file_by_id(file_id, directory_path):
         else:
             logging.warning(f"[BigQuery] File {file_id} not found in directory: {directory_path}")
 
-    except FileNotFoundError:
-        logging.error(f"[BigQuery] File {file_id} not found.")
-    except PermissionError:
-        logging.error(f"[BigQuery] Permission denied to delete file {file_id}.")
-    except Exception as e:
-        logging.error(f"[BigQuery] An error occurred while deleting file {file_id}: {e}")
+    except:
+        pass
 
 
 def cleanup(successful_files):
     for file_id in successful_files:
-        try:
             delete_file_by_id(f"{file_id}.xlsx", 'argus_downloads')
-        except:
-            pass
-        try:
             delete_file_by_id(f"{file_id}.csv", 'argus_reformated')
-        except:
-            pass
+
 
 def argus():
     config = load_config()
@@ -110,6 +101,7 @@ def argus():
     file_ids = set(list_files_in_directory('argus_reformated')) - set(existing_files.get('bigQuery_argus_files'))
     logging.info(f"[BigQuery] total files to upload {len(file_ids)}")
     for file_id in list(file_ids):
+        print(file_id)
         out = run_job(client, table_id, job_config, file_id)
         if out:
             successful_files.append(file_id)
@@ -124,6 +116,7 @@ def argus():
 
     if DELETE_FILES:
         cleanup(successful_files)
+
 
 if __name__ == "__main__":
     argus()
